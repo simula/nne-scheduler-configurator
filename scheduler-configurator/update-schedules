@@ -95,7 +95,7 @@ LOGGING_CONF = {
    }
 }
 logging.config.dictConfig(LOGGING_CONF)
-logging.debug("Starting")
+logging.debug('Starting')
 
 
 # ====== Connect to database ================================================
@@ -147,7 +147,7 @@ subprocess.call(cmd)
 # ====== Generate configuration =============================================
 def dumpJSON(nodeID, nodeConfig):
    # print(nodeConfig)
-   outputFile = 'Node' + str(nodeID) + '.json'
+   outputFile = 'node' + str(nodeID) + '.json'
    try:
       with open(outputFile, 'w') as f:
          json.dump(nodeConfig, f, ensure_ascii=False)
@@ -205,11 +205,11 @@ if nodeConfig != None:
 
 
 # ====== Update Git repository ==============================================
-existingFiles = [file for file in os.listdir(".") if fnmatch.fnmatch(file, "Node[0-9][0-9]*.json")]
+existingFiles = [file for file in os.listdir('.') if fnmatch.fnmatch(file, 'node[0-9][0-9]*.json')]
 gitAdd = set()
 gitRem = set()
 for nodeID in nodesUpdated:
-   nodeFile = "Node" + str(nodeID) + ".json"
+   nodeFile = 'node' + str(nodeID) + '.json'
    gitAdd.add(nodeFile)
 
 for nodeFile in existingFiles:
@@ -238,4 +238,4 @@ if (len(gitAdd) > 0) or (len(gitRem) > 0):
 
 
 # ====== Clean-up ===========================================================
-logging.debug("Exiting")
+logging.debug('Exiting')

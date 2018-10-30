@@ -1,1 +1,1 @@
-5 * * * *   root   if [ ! -e /experiments/nne-node-experiments/ ] ; then git clone -q https://github.com/simula/nne-node-experiments.git /experiments/nne-node-experiments ; else cd /experiments/nne-node-experiments/ && git pull -q ; fi
+*/15 * * * *   root   if [ ! -e /experiments/nne-node-experiments/ ] ; then git clone -q https://github.com/simula/nne-node-experiments.git /experiments/nne-node-experiments ; else cd /experiments/nne-node-experiments/ && git pull -q ; fi
