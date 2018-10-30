@@ -118,6 +118,7 @@ SELECT
 FROM
    measurement_instance i, measurement_descriptor d, network n
 WHERE
+   i.node_id = 864 AND
    i.measurement_desc_id = d.id AND
    i.network_id = n.id
 ORDER BY
@@ -146,6 +147,7 @@ row = cursor.fetchone()
 while row is not None:
    print(row)
 
+   # ====== Get configuration for measurement ===============================
    rowNodeID            = int(row[0])
    rowMeasurementID     = row[1]
    rowMeasurementDescID = int(row[2])
@@ -155,6 +157,10 @@ while row is not None:
    rowMNC               = row[6]
    rowStartTime         = row[7]
    rowStopTime          = row[8]
+   rowContainer         = None
+
+   if rowMeasurementDescID == 1:
+      rowContainer = 'dreibh/udpping'
 
    if rowNodeID != nodeID:
       if nodeConfig != None:
@@ -163,6 +169,7 @@ while row is not None:
       nodeConfig = {  'node_id': nodeID,
                       'instances' : [] }
 
+   # ====== Create instance configuration for measurement ===================
    nodeConfig['instances'].append({
       'measurement_id':      rowMeasurementID,
       'measurement_desc_id': rowMeasurementDescID,
@@ -170,6 +177,7 @@ while row is not None:
       'network_id':          rowNetworkID,
       'mcc':                 rowMCC,
       'mnc':                 rowMNC,
+      'container':           rowContainer,
       'start_time':          str(rowStartTime),
       'stop_time':           str(rowStopTime)
    })
