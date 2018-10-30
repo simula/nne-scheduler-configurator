@@ -37,16 +37,20 @@
 # Ubuntu/Debian dependencies:
 # python3-mysql.connector
 
+import fnmatch
 import json
 import logging
 import logging.config
 import mysql.connector
+import os
+import re
+import subprocess
 import sys
 
 
 CONFIG_FILE    = '/home/dreibh/update-schedules.json'
 LOG_DIRECTORY  = '.'
-CONF_DIRECTORY = '.'
+CONF_DIRECTORY = 'nne-node-experiments'
 
 
 # ====== Read configuration file ============================================
@@ -131,9 +135,20 @@ except mysql.connector.Error as e:
 
 
 # ====== Generate configuration =============================================
+try:
+   os.chdir(CONF_DIRECTORY)
+except Exception as e:
+   logging.error('Unable to change to directory ' + CONF_DIRECTORY + ': ' + str(e))
+   sys.exit(1)
+
+cmd = [ '/usr/bin/git', 'pull', '-q' ]
+subprocess.call(cmd)
+
+
+# ====== Generate configuration =============================================
 def dumpJSON(nodeID, nodeConfig):
-   print(nodeConfig)
-   outputFile = CONF_DIRECTORY + '/Node' + str(nodeID) + '.json'
+   # print(nodeConfig)
+   outputFile = 'Node' + str(nodeID) + '.json'
    try:
       with open(outputFile, 'w') as f:
          json.dump(nodeConfig, f, ensure_ascii=False)
@@ -141,11 +156,12 @@ def dumpJSON(nodeID, nodeConfig):
       logger.error('Unable to write file ' + outputFile + ': ' + str(e))
       sys.exit(1)
 
-nodeID     = None
-nodeConfig = None
+nodesUpdated = set()
+nodeID       = None
+nodeConfig   = None
 row = cursor.fetchone()
 while row is not None:
-   print(row)
+   # print(row)
 
    # ====== Get configuration for measurement ===============================
    rowNodeID            = int(row[0])
@@ -158,6 +174,7 @@ while row is not None:
    rowStartTime         = row[7]
    rowStopTime          = row[8]
    rowContainer         = None
+   nodesUpdated.add(rowNodeID)
 
    if rowMeasurementDescID == 1:
       rowContainer = 'dreibh/udpping'
@@ -186,6 +203,39 @@ while row is not None:
 
 if nodeConfig != None:
    dumpJSON(nodeID, nodeConfig)
+
+
+# ====== Update Git repository ==============================================
+existingFiles = [file for file in os.listdir(".") if fnmatch.fnmatch(file, "Node[0-9][0-9]*.json")]
+gitAdd = set()
+gitRem = set()
+for nodeID in nodesUpdated:
+   nodeFile = "Node" + str(nodeID) + ".json"
+   gitAdd.add(nodeFile)
+
+for nodeFile in existingFiles:
+    match = re.match(r'^Node(\d+)\.json$', nodeFile)
+    if match:
+       nodeID = int(match.group(1))
+       if not nodeID in nodesUpdated:
+          gitRem.add(nodeFile)
+
+if len(gitAdd) > 0:
+   cmd = [ '/usr/bin/git', 'add' ]
+   for file in gitAdd:
+      cmd.append(file)
+   subprocess.call(cmd)
+if len(gitRem) > 0:
+   cmd = [ '/usr/bin/git', 'rm', '-q', '-f' ]
+   for file in gitRem:
+      cmd.append(file)
+   subprocess.call(cmd)
+
+if (len(gitAdd) > 0) or (len(gitRem) > 0):
+   cmd = [ '/usr/bin/git', 'commit', '-q', '-a', '-m', '"Updated configuration files."' ]
+   subprocess.call(cmd)
+   cmd = [ '/usr/bin/git', 'push', '-q' ]
+   subprocess.call(cmd)
 
 
 # ====== Clean-up ===========================================================
