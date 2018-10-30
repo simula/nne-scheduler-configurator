@@ -118,7 +118,6 @@ SELECT
 FROM
    measurement_instance i, measurement_descriptor d, network n
 WHERE
-   i.node_id = 864 AND
    i.measurement_desc_id = d.id AND
    i.network_id = n.id
 ORDER BY
