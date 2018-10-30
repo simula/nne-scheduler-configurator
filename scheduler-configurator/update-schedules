@@ -44,8 +44,9 @@ import mysql.connector
 import sys
 
 
-CONFIG_FILE   = '/home/dreibh/update-schedules.json'
-LOG_DIRECTORY = '.'
+CONFIG_FILE    = '/home/dreibh/update-schedules.json'
+LOG_DIRECTORY  = '.'
+CONF_DIRECTORY = '.'
 
 
 # ====== Read configuration file ============================================
@@ -98,7 +99,7 @@ try:
    connection = mysql.connector.connect(host=databaseHost, port=databasePort, database=databaseDB,
                                         user=databaseUser, password=databasePassword)
 except mysql.connector.Error as e:
-   logging.error('ERROR: Unable to connect to database: ' + str(e))
+   logging.error('Unable to connect to database: ' + str(e))
    sys.exit(1)
 if not connection.is_connected():
    sys.exit(1)
@@ -111,8 +112,8 @@ try:
 SELECT
    i.node_id,
    i.id AS measurement_id,
-   d.name AS measurement_name,
-   n.mcc, n.mnc,
+   i.measurement_desc_id, d.name AS measurement_name,
+   n.id as network_id, n.mcc, n.mnc,
    i.start_time, i.stop_time
 FROM
    measurement_instance i, measurement_descriptor d, network n
@@ -125,15 +126,59 @@ ORDER BY
 """)
 
 except mysql.connector.Error as e:
-   logging.error('ERROR: Unable to query database: ' + str(e))
+   logging.error('Unable to query database: ' + str(e))
    sys.exit(1)
 
 
 # ====== Generate configuration =============================================
+def dumpJSON(nodeID, nodeConfig):
+   print(nodeConfig)
+   outputFile = CONF_DIRECTORY + '/Node' + str(nodeID) + '.json'
+   try:
+      with open(outputFile, 'w') as f:
+         json.dump(nodeConfig, f, ensure_ascii=False)
+   except Exception as e:
+      logger.error('Unable to write file ' + outputFile + ': ' + str(e))
+      sys.exit(1)
+
+nodeID     = None
+nodeConfig = None
 row = cursor.fetchone()
 while row is not None:
    print(row)
+
+   rowNodeID            = int(row[0])
+   rowMeasurementID     = row[1]
+   rowMeasurementDescID = int(row[2])
+   rowMeasurementDesc   = row[3]
+   rowNetworkID         = int(row[4])
+   rowMCC               = row[5]
+   rowMNC               = row[6]
+   rowStartTime         = row[7]
+   rowStopTime          = row[8]
+
+   if rowNodeID != nodeID:
+      if nodeConfig != None:
+         dumpJSON(nodeID, nodeConfig)
+      nodeID     = rowNodeID
+      nodeConfig = {  'node_id': nodeID,
+                      'instances' : [] }
+
+   nodeConfig['instances'].append({
+      'measurement_id':      rowMeasurementID,
+      'measurement_desc_id': rowMeasurementDescID,
+      'measurement_desc':    rowMeasurementDesc,
+      'network_id':          rowNetworkID,
+      'mcc':                 rowMCC,
+      'mnc':                 rowMNC,
+      'start_time':          str(rowStartTime),
+      'stop_time':           str(rowStopTime)
+   })
+
    row = cursor.fetchone()
+
+if nodeConfig != None:
+   dumpJSON(nodeID, nodeConfig)
 
 
 # ====== Clean-up ===========================================================
