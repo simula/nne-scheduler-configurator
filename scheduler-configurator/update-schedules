@@ -13,7 +13,7 @@
 #                       https://www.nntb.no
 # =================================================================
 #
-# Container-based UDPPing Launcher for NorNet Edge
+# Export NorNet Edge measurement configurations to JSON
 #
 # Copyright (C) 2018-2019 by Thomas Dreibholz
 #
@@ -152,7 +152,7 @@ def dumpJSON(nodeID, nodeConfig):
       with open(outputFile, 'w') as f:
          json.dump(nodeConfig, f, ensure_ascii=False)
    except Exception as e:
-      logger.error('Unable to write file ' + outputFile + ': ' + str(e))
+      logging.error('Unable to write file ' + outputFile + ': ' + str(e))
       sys.exit(1)
 
 nodesUpdated = set()
