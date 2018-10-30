@@ -32,6 +32,109 @@
 #
 # Contact: dreibh@simula.no
 
-import mysql.connector
 
-mysql.connector.connect(host='localhost',database='mysql',user='root',password='')
+
+# Ubuntu/Debian dependencies:
+# python3-mysql.connector
+
+import json
+import logging
+import logging.config
+import mysql.connector
+import sys
+
+
+CONFIG_FILE   = '/home/dreibh/update-schedules.json'
+LOG_DIRECTORY = '.'
+
+
+# ====== Read configuration file ============================================
+try:
+   configurationFile = open(CONFIG_FILE)
+   configuration = json.load(configurationFile)
+except:
+   sys.stderr.write('Unable to read configuration from ' + CONFIG_FILE + '!\n')
+   sys.exit(1)
+
+try:
+   databaseHost     = configuration['database_host']
+   databasePort     = int(configuration['database_port'])
+   databaseDB       = configuration['database_db']
+   databaseUser     = configuration['database_user']
+   databasePassword = configuration['database_password']
+except:
+   sys.stderr.write('Invalid or incomplete configuration in ' + CONFIG_FILE + '!\n')
+   sys.exit(1)
+
+
+# ====== Initialise logger ==================================================
+LOGGING_CONF = {
+   'version': 1,
+   'handlers': {
+      'default': {
+         'level': 'DEBUG',
+         'class': 'logging.handlers.TimedRotatingFileHandler',
+         'formatter': 'standard',
+         'filename': LOG_DIRECTORY + '/update-schedules.log',
+         'when': 'D'
+      },
+   },
+   'formatters': {
+      'standard': {
+         'format': '%(asctime)s %(levelname)s [PID=%(process)d] %(message)s'
+      },
+   },
+   'root': {
+      'level': 'DEBUG',
+      'handlers': ['default'],
+   }
+}
+logging.config.dictConfig(LOGGING_CONF)
+logging.debug("Starting")
+
+
+# ====== Connect to database ================================================
+try:
+   connection = mysql.connector.connect(host=databaseHost, port=databasePort, database=databaseDB,
+                                        user=databaseUser, password=databasePassword)
+except mysql.connector.Error as e:
+   logging.error('ERROR: Unable to connect to database: ' + str(e))
+   sys.exit(1)
+if not connection.is_connected():
+   sys.exit(1)
+
+
+# ====== Query database =====================================================
+try:
+   cursor = connection.cursor()
+   cursor.execute("""
+SELECT
+   i.node_id,
+   i.id AS measurement_id,
+   d.name AS measurement_name,
+   n.mcc, n.mnc,
+   i.start_time, i.stop_time
+FROM
+   measurement_instance i, measurement_descriptor d, network n
+WHERE
+   i.node_id = 864 AND
+   i.measurement_desc_id = d.id AND
+   i.network_id = n.id
+ORDER BY
+   node_id, measurement_id;
+""")
+
+except mysql.connector.Error as e:
+   logging.error('ERROR: Unable to query database: ' + str(e))
+   sys.exit(1)
+
+
+# ====== Generate configuration =============================================
+row = cursor.fetchone()
+while row is not None:
+   print(row)
+   row = cursor.fetchone()
+
+
+# ====== Clean-up ===========================================================
+logging.debug("Exiting")
