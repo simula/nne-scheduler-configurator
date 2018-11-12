@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # =================================================================
 #          #     #                 #     #
@@ -48,7 +48,7 @@ import subprocess
 import sys
 
 
-CONFIG_FILE    = '/home/dreibh/update-schedules.json'
+CONFIG_FILE    = '/home/nornetpp/update-schedules.json'
 LOG_DIRECTORY  = '.'
 CONF_DIRECTORY = 'nne-node-experiments'
 
@@ -62,11 +62,11 @@ except:
    sys.exit(1)
 
 try:
-   databaseHost     = configuration['database_host']
+   databaseHost     = str(configuration['database_host'])
    databasePort     = int(configuration['database_port'])
-   databaseDB       = configuration['database_db']
-   databaseUser     = configuration['database_user']
-   databasePassword = configuration['database_password']
+   databaseDB       = str(configuration['database_db'])
+   databaseUser     = str(configuration['database_user'])
+   databasePassword = str(configuration['database_password'])
 except:
    sys.stderr.write('Invalid or incomplete configuration in ' + CONFIG_FILE + '!\n')
    sys.exit(1)
