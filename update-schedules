@@ -224,13 +224,13 @@ if len(gitAdd) > 0:
    cmd = [ '/usr/bin/git', 'add' ]
    for file in sorted(gitAdd):
       cmd.append(file)
-   print(cmd)
+   # print(cmd)
    subprocess.call(cmd)
 if len(gitRem) > 0:
    cmd = [ '/usr/bin/git', 'rm', '-q', '-f' ]
    for file in sorted(gitRem):
       cmd.append(file)
-   print(cmd)
+   # print(cmd)
    subprocess.call(cmd)
 
 if (len(gitAdd) > 0) or (len(gitRem) > 0):
