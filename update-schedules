@@ -146,6 +146,7 @@ subprocess.call(cmd)
 
 # ====== Generate configuration =============================================
 def dumpJSON(nodeID, nodeConfig):
+   # print(nodeID)
    # print(nodeConfig)
    outputFile = 'node' + str(nodeID) + '.json'
    try:
@@ -205,7 +206,7 @@ if nodeConfig != None:
 
 
 # ====== Update Git repository ==============================================
-existingFiles = [file for file in os.listdir('.') if fnmatch.fnmatch(file, 'node[0-9][0-9]*.json')]
+existingFiles = [file for file in os.listdir('.') if fnmatch.fnmatch(file, 'node[0-9]*.json')]
 gitAdd = set()
 gitRem = set()
 for nodeID in nodesUpdated:
@@ -221,13 +222,15 @@ for nodeFile in existingFiles:
 
 if len(gitAdd) > 0:
    cmd = [ '/usr/bin/git', 'add' ]
-   for file in gitAdd:
+   for file in sorted(gitAdd):
       cmd.append(file)
+   print(cmd)
    subprocess.call(cmd)
 if len(gitRem) > 0:
    cmd = [ '/usr/bin/git', 'rm', '-q', '-f' ]
-   for file in gitRem:
+   for file in sorted(gitRem):
       cmd.append(file)
+   print(cmd)
    subprocess.call(cmd)
 
 if (len(gitAdd) > 0) or (len(gitRem) > 0):
