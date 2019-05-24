@@ -118,7 +118,8 @@ SELECT
    i.id AS measurement_id,
    i.measurement_desc_id, d.name AS measurement_name,
    n.id as network_id, n.mcc, n.mnc,
-   i.start_time, i.stop_time
+   i.start_time, i.stop_time,
+   i.container
 FROM
    measurement_instance i, measurement_descriptor d, network n
 WHERE
@@ -173,11 +174,8 @@ while row is not None:
    rowMNC               = row[6]
    rowStartTime         = row[7]
    rowStopTime          = row[8]
-   rowContainer         = None
+   rowContainer         = row[9]
    nodesUpdated.add(rowNodeID)
-
-   if rowMeasurementDescID == 1:
-      rowContainer = 'dreibh/udpping'
 
    if rowNodeID != nodeID:
       if nodeConfig != None:
