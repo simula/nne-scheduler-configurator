@@ -119,7 +119,7 @@ SELECT
    i.measurement_desc_id, d.name AS measurement_name,
    n.id as network_id, n.mcc, n.mnc,
    i.start_time, i.stop_time,
-   i.container
+   d.container
 FROM
    measurement_instance i, measurement_descriptor d, network n
 WHERE
