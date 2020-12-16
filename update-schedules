@@ -37,6 +37,7 @@
 # Ubuntu/Debian dependencies:
 # python3-mysql.connector
 
+import datetime
 import fnmatch
 import json
 import logging
@@ -175,27 +176,35 @@ while row is not None:
    rowStartTime         = row[7]
    rowStopTime          = row[8]
    rowContainer         = row[9]
-   nodesUpdated.add(rowNodeID)
 
-   if rowNodeID != nodeID:
-      if nodeConfig != None:
-         dumpJSON(nodeID, nodeConfig)
-      nodeID     = rowNodeID
-      nodeConfig = {  'node_id': nodeID,
-                      'instances' : [] }
+   if ((rowStopTime == None) or (rowStopTime > datetime.datetime.utcnow())):   
+      nodesUpdated.add(rowNodeID)
 
-   # ====== Create instance configuration for measurement ===================
-   nodeConfig['instances'].append({
-      'measurement_id':      rowMeasurementID,
-      'measurement_desc_id': rowMeasurementDescID,
-      'measurement_desc':    rowMeasurementDesc,
-      'network_id':          rowNetworkID,
-      'mcc':                 rowMCC,
-      'mnc':                 rowMNC,
-      'container':           rowContainer,
-      'start_time':          str(rowStartTime),
-      'stop_time':           str(rowStopTime)
-   })
+      if rowNodeID != nodeID:
+         if nodeConfig != None:
+            dumpJSON(nodeID, nodeConfig)
+         nodeID     = rowNodeID
+         nodeConfig = {  'node_id': nodeID,
+                         'instances' : [] }
+
+      # ====== Create instance configuration for measurement ================
+      # print('Adding: ' + str(rowMeasurementID) + \
+      #       ' of descriptor ' + str(rowMeasurementDescID))
+      nodeConfig['instances'].append({
+         'measurement_id':      rowMeasurementID,
+         'measurement_desc_id': rowMeasurementDescID,
+         'measurement_desc':    rowMeasurementDesc,
+         'network_id':          rowNetworkID,
+         'mcc':                 rowMCC,
+         'mnc':                 rowMNC,
+         'container':           rowContainer,
+         'start_time':          str(rowStartTime),
+         'stop_time':           str(rowStopTime)
+      })
+
+   # else:
+   #    print('Already stopped: ' + str(rowMeasurementID) + ' of descriptor ' + \
+   #          str(rowMeasurementDescID) + ' at ' + str(rowStopTime))
 
    row = cursor.fetchone()
 
@@ -217,6 +226,12 @@ for nodeFile in existingFiles:
        nodeID = int(match.group(1))
        if not nodeID in nodesUpdated:
           gitRem.add(nodeFile)
+
+
+# print(len(gitAdd))
+# print(len(gitRem))
+# sys.exit(1)
+
 
 if len(gitAdd) > 0:
    cmd = [ '/usr/bin/git', 'add' ]
