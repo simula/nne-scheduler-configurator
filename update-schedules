@@ -118,7 +118,7 @@ SELECT
    i.node_id,
    i.id AS measurement_id,
    i.measurement_desc_id, d.name AS measurement_name,
-   n.id as network_id, n.mcc, n.mnc,
+   n.id as network_id, n.mcc, n.mnc, i.iccid,
    i.start_time, i.stop_time,
    d.container
 FROM
@@ -173,9 +173,10 @@ while row is not None:
    rowNetworkID         = int(row[4])
    rowMCC               = row[5]
    rowMNC               = row[6]
-   rowStartTime         = row[7]
-   rowStopTime          = row[8]
-   rowContainer         = row[9]
+   rowICCID             = row[7]
+   rowStartTime         = row[8]
+   rowStopTime          = row[9]
+   rowContainer         = row[10]
 
    if ((rowStopTime == None) or (rowStopTime > datetime.datetime.utcnow())):   
       nodesUpdated.add(rowNodeID)
@@ -197,6 +198,7 @@ while row is not None:
          'network_id':          rowNetworkID,
          'mcc':                 rowMCC,
          'mnc':                 rowMNC,
+         'iccid':               rowICCID,
          'container':           rowContainer,
          'start_time':          str(rowStartTime),
          'stop_time':           str(rowStopTime)
