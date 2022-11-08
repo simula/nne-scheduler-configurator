@@ -257,3 +257,4 @@ if (len(gitAdd) > 0) or (len(gitRem) > 0):
 
 # ====== Clean-up ===========================================================
 logging.debug('Exiting')
+connection.close()
