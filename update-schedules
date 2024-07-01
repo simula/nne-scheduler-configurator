@@ -164,7 +164,7 @@ for row in rows:
    rowStopTime          = row[9]
    rowContainer         = row[10]
 
-   if ((rowStopTime == None) or (rowStopTime > datetime.datetime.utcnow())):   
+   if ((rowStopTime == None) or (rowStopTime > datetime.datetime.now(datetime.UTC).replace(tzinfo = None))):
       nodesUpdated.add(rowNodeID)
 
       if rowNodeID != nodeID:
