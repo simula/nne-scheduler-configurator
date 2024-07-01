@@ -1,7 +1,0 @@
-{
-   "database_host": "db",
-   "database_port": 3306,
-   "database_db": "nne",
-   "database_user" : "<SET_USER_HERE>",
-   "database_password": "<SET_PASSWORD_HERE>"
-}

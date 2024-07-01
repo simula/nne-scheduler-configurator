@@ -1,0 +1,2 @@
+# ====== Update Schedules (JSON files) ======================================
+5,20,35,50 * * * *   nornetpp   /nne/experiments/nne-scheduler-configurator/update-schedules /nne/system/update-schedules-database.conf /nne/experiments/nne-node-experiments /var/log/update-schedules.log
